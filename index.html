@@ -488,6 +488,80 @@
             .size-btn.selected:hover {
                 background-color: #a01519;
             }
+            .menu-item-name {
+    font-weight: 500;
+    color: #333;
+    line-height: 1.3;
+    word-wrap: break-word;
+    font-size: 14px;
+}
+
+.item-price {
+    font-weight: 600;
+    color: #eb2529;
+    font-size: 13px;
+    min-width: 60px;
+    text-align: right;
+}
+
+.size-btn {
+    background-color: #f0f0f0;
+    border: 1px solid #ddd;
+    padding: 2px 6px;
+    border-radius: 4px;
+    font-size: 9px;
+    cursor: pointer;
+    transition: all 0.2s;
+    white-space: nowrap;
+}
+
+.search-container {
+    background-color: white;
+    margin: 16px;
+    border-radius: 8px;
+    padding: 12px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.search-input {
+    width: 100%;
+    padding: 10px 40px 10px 12px;
+    border: 2px solid #eb2529;
+    border-radius: 6px;
+    font-size: 16px;
+    outline: none;
+    background-color: #f9f9f9;
+}
+
+.search-input:focus {
+    background-color: white;
+    border-color: #FFC72C;
+}
+
+.search-icon {
+    position: absolute;
+    right: 24px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: #eb2529;
+    font-size: 18px;
+    pointer-events: none;
+}
+
+.search-wrapper {
+    position: relative;
+}
+
+.no-results {
+    text-align: center;
+    padding: 40px 20px;
+    color: white;
+}
+
+.no-results-icon {
+    font-size: 48px;
+    margin-bottom: 16px;
+}
     </style>
 
 </head>
@@ -508,7 +582,7 @@
                     GOOD TIMES ALERT!
                 </div>
                 <div class="beer-banner" onclick="showScreen('offers')">
-                      <img src="images/logo.png" alt="Logo">
+                    <img src="Brandmessage-Kingfisher.jpg" alt="Logo">
                 </div>
                 <h2 class="menu-title">EXPLORE OUR DIGITAL MENU!</h2>
                 <div class="menu-grid">
@@ -717,6 +791,13 @@
 <!-- Beers Screen -->
 <div id="beers-screen" class="screen">
     <div class="screen-header">
+  <!-- Search Bar -->
+<div class="search-container">
+    <div class="search-wrapper">
+        <input type="text" class="search-input" placeholder="Search for beers & beverages..." id="beers-search" oninput="searchItems('beers')">
+        <span class="search-icon">🔍</span>
+    </div>
+</div>
         <button class="back-button" onclick="showScreen('home')">←</button>
         <h1>Beers & Beverages</h1>
         <div class="cart-icon" onclick="showScreen('cart')" style="margin-left: auto;">
@@ -1051,6 +1132,13 @@
         <!-- Food Menu Screen -->
         <div id="food-menu-screen" class="screen">
             <div class="screen-header">
+                <!-- Search Bar -->
+<div class="search-container">
+    <div class="search-wrapper">
+        <input type="text" class="search-input" placeholder="Search for dishes..." id="food-search" oninput="searchItems('food-menu')">
+        <span class="search-icon">🔍</span>
+    </div>
+</div>
                 <button class="back-button" onclick="showScreen('home')">←</button>
                 <h1>Food Menu</h1>
                 <div class="cart-icon" onclick="showScreen('cart')" style="margin-left: auto;">
@@ -5647,6 +5735,13 @@
         </div> -->
         <div id="alcohol-screen" class="screen">
             <div class="screen-header">
+  <!-- Search Bar -->
+<div class="search-container">
+    <div class="search-wrapper">
+        <input type="text" class="search-input" placeholder="Search for alcohol..." id="alcohol-search" oninput="searchItems('alcohol')">
+        <span class="search-icon">🔍</span>
+    </div>
+</div>
                 <button class="back-button" onclick="showScreen('home')">←</button>
                 <h1>Alcohol Menu</h1>
                 <div class="cart-icon" onclick="showScreen('cart')" style="margin-left: auto;">
@@ -6720,6 +6815,76 @@
             }
         }
 
+        let originalMenuContent = {};
+
+// Store original menu content when page loads
+function storeOriginalContent() {
+    originalMenuContent['food-menu'] = document.querySelector('#food-menu-screen .screen-content').innerHTML;
+    originalMenuContent['beers'] = document.querySelector('#beers-screen .screen-content').innerHTML;
+    originalMenuContent['alcohol'] = document.querySelector('#alcohol-screen .screen-content').innerHTML;
+}
+
+// Search functionality
+function searchItems(menuType) {
+    const searchInput = document.querySelector(`#${menuType}-search`);
+    const searchTerm = searchInput.value.toLowerCase().trim();
+    const screenContent = document.querySelector(`#${menuType}-screen .screen-content`);
+    
+    // Get all menu sections in current screen
+    const sections = screenContent.querySelectorAll('.menu-section');
+    
+    if (searchTerm === '') {
+        // Show all sections and items
+        sections.forEach(section => {
+            section.style.display = 'block';
+            const items = section.querySelectorAll('.menu-list-item');
+            items.forEach(item => item.style.display = 'flex');
+        });
+        return;
+    }
+    
+    let hasResults = false;
+    
+    sections.forEach(section => {
+        const items = section.querySelectorAll('.menu-list-item');
+        let sectionHasResults = false;
+        
+        items.forEach(item => {
+            const itemName = item.querySelector('.menu-item-name');
+            if (itemName && itemName.textContent.toLowerCase().includes(searchTerm)) {
+                item.style.display = 'flex';
+                sectionHasResults = true;
+                hasResults = true;
+            } else {
+                item.style.display = 'none';
+            }
+        });
+        
+        // Hide section if no items match
+        section.style.display = sectionHasResults ? 'block' : 'none';
+    });
+    
+    // Show no results message if nothing found
+    let noResultsDiv = screenContent.querySelector('.no-results');
+    if (!hasResults) {
+        if (!noResultsDiv) {
+            noResultsDiv = document.createElement('div');
+            noResultsDiv.className = 'no-results';
+            noResultsDiv.innerHTML = `
+                <div class="no-results-icon">🔍</div>
+                <h3>No items found</h3>
+                <p>Try searching with different keywords</p>
+            `;
+            screenContent.appendChild(noResultsDiv);
+        }
+        noResultsDiv.style.display = 'block';
+    } else {
+        if (noResultsDiv) {
+            noResultsDiv.style.display = 'none';
+        }
+    }
+}
+
         // Patch updateAllItemControls to update controls for all menu-list-items with size selectors
         const originalUpdateAllItemControls = updateAllItemControls;
         updateAllItemControls = function () {
@@ -6756,6 +6921,7 @@
         }
         // Call after DOM is loaded
         document.addEventListener('DOMContentLoaded', setupSizeSelectors);
+ 
     </script>
 </body>
 </html>
