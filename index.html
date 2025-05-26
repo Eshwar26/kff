@@ -6826,19 +6826,35 @@ function storeOriginalContent() {
 
 // Search functionality
 function searchItems(menuType) {
-    const searchInput = document.querySelector(`#${menuType}-search`);
+    const searchInputId = menuType === 'food-menu' ? 'food-search' : `${menuType}-search`;
+    const searchInput = document.querySelector(`#${searchInputId}`);
     const searchTerm = searchInput.value.toLowerCase().trim();
-    const screenContent = document.querySelector(`#${menuType}-screen .screen-content`);
+    
+    // Get the correct screen content
+    let screenContent;
+    if (menuType === 'food-menu') {
+        screenContent = document.querySelector('#food-menu-screen .screen-content');
+    } else {
+        screenContent = document.querySelector(`#${menuType}-screen .screen-content`);
+    }
     
     // Get all menu sections in current screen
     const sections = screenContent.querySelectorAll('.menu-section');
+    
+    // Remove any existing no-results message
+    const existingNoResults = screenContent.querySelector('.no-results');
+    if (existingNoResults) {
+        existingNoResults.remove();
+    }
     
     if (searchTerm === '') {
         // Show all sections and items
         sections.forEach(section => {
             section.style.display = 'block';
             const items = section.querySelectorAll('.menu-list-item');
-            items.forEach(item => item.style.display = 'flex');
+            items.forEach(item => {
+                item.style.display = 'flex';
+            });
         });
         return;
     }
@@ -6865,26 +6881,17 @@ function searchItems(menuType) {
     });
     
     // Show no results message if nothing found
-    let noResultsDiv = screenContent.querySelector('.no-results');
     if (!hasResults) {
-        if (!noResultsDiv) {
-            noResultsDiv = document.createElement('div');
-            noResultsDiv.className = 'no-results';
-            noResultsDiv.innerHTML = `
-                <div class="no-results-icon">🔍</div>
-                <h3>No items found</h3>
-                <p>Try searching with different keywords</p>
-            `;
-            screenContent.appendChild(noResultsDiv);
-        }
-        noResultsDiv.style.display = 'block';
-    } else {
-        if (noResultsDiv) {
-            noResultsDiv.style.display = 'none';
-        }
+        const noResultsDiv = document.createElement('div');
+        noResultsDiv.className = 'no-results';
+        noResultsDiv.innerHTML = `
+            <div class="no-results-icon">🔍</div>
+            <h3>No items found</h3>
+            <p>Try searching with different keywords</p>
+        `;
+        screenContent.appendChild(noResultsDiv);
     }
 }
-
         // Patch updateAllItemControls to update controls for all menu-list-items with size selectors
         const originalUpdateAllItemControls = updateAllItemControls;
         updateAllItemControls = function () {
@@ -6920,7 +6927,19 @@ function searchItems(menuType) {
             originalUpdateAllItemControls();
         }
         // Call after DOM is loaded
-        document.addEventListener('DOMContentLoaded', setupSizeSelectors);
+        // document.addEventListener('DOMContentLoaded', setupSizeSelectors);
+        document.addEventListener('DOMContentLoaded', function() {
+    setupSizeSelectors();
+    
+    // Initialize search inputs
+    document.querySelectorAll('.search-input').forEach(input => {
+        input.addEventListener('input', function() {
+            const menuType = this.id.includes('food') ? 'food-menu' : 
+                           this.id.includes('beers') ? 'beers' : 'alcohol';
+            searchItems(menuType);
+        });
+    });
+});
  
     </script>
 </body>
